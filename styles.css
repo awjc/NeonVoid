@@ -9,6 +9,16 @@ body {
     font-family: 'Arial', sans-serif;
     overflow: hidden;
     color: #fff;
+    /* Prevent mobile browser zoom */
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent double-tap zoom */
+    -webkit-tap-highlight-color: transparent;
 }
 
 #glCanvas {
@@ -16,6 +26,9 @@ body {
     width: 100vw;
     height: 100vh;
     background: radial-gradient(circle at center, #111 0%, #000 100%);
+    /* Prevent canvas zoom */
+    touch-action: none;
+    -webkit-touch-callout: none;
 }
 
 .controls {
@@ -28,6 +41,10 @@ body {
     border-radius: 10px;
     border: 1px solid #333;
     backdrop-filter: blur(10px);
+    /* Allow touch interactions on controls */
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .controls h1 {

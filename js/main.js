@@ -72,14 +72,16 @@ class NeonVoidApp {
         let lastDistance = 0;
 
         this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
             touches = Array.from(e.touches);
             if (touches.length === 2) {
                 lastDistance = this.getTouchDistance(touches[0], touches[1]);
             }
-        });
+        }, { passive: false });
 
         this.canvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             touches = Array.from(e.touches);
             
             if (touches.length === 2 && this.renderer) {
@@ -95,11 +97,33 @@ class NeonVoidApp {
         }, { passive: false });
 
         this.canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
             touches = Array.from(e.touches);
             if (touches.length < 2) {
                 lastDistance = 0;
             }
-        });
+        }, { passive: false });
+
+        // Global touch handler to prevent any remaining zoom gestures
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, { passive: false });
+
+        // Prevent double-tap zoom
+        document.addEventListener('touchend', (e) => {
+            if (e.target === this.canvas) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     }
 
     getTouchDistance(touch1, touch2) {
