@@ -21,6 +21,18 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
+.version {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 10px;
+    z-index: 50;
+    pointer-events: none;
+    user-select: none;
+}
+
 #glCanvas {
     display: block;
     width: 100vw;
