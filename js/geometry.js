@@ -100,4 +100,122 @@ class Geometry {
 
         return { vertices, indices };
     }
+
+    static createCylinder(radius = 1, height = 2, radialSegments = 32) {
+        const vertices = [];
+        const indices = [];
+
+        // Create vertices for top and bottom circles + side
+        for (let i = 0; i <= radialSegments; i++) {
+            const angle = (i / radialSegments) * 2 * Math.PI;
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+
+            // Bottom circle
+            vertices.push(x, -height / 2, z);
+            vertices.push(0, -1, 0); // Normal pointing down
+
+            // Top circle  
+            vertices.push(x, height / 2, z);
+            vertices.push(0, 1, 0); // Normal pointing up
+
+            // Side vertices (duplicate for proper normals)
+            vertices.push(x, -height / 2, z);
+            vertices.push(x, 0, z); // Normal pointing outward
+
+            vertices.push(x, height / 2, z);
+            vertices.push(x, 0, z); // Normal pointing outward
+        }
+
+        // Center vertices for top and bottom caps
+        const centerBottomIndex = vertices.length / 6;
+        vertices.push(0, -height / 2, 0, 0, -1, 0); // Bottom center
+        
+        const centerTopIndex = vertices.length / 6;
+        vertices.push(0, height / 2, 0, 0, 1, 0); // Top center
+
+        // Create indices for side faces
+        for (let i = 0; i < radialSegments; i++) {
+            const sideBottomCurrent = i * 4 + 2; // Side bottom vertex
+            const sideTopCurrent = i * 4 + 3;    // Side top vertex
+            const sideBottomNext = ((i + 1) % radialSegments) * 4 + 2;
+            const sideTopNext = ((i + 1) % radialSegments) * 4 + 3;
+
+            // Two triangles per side face
+            indices.push(sideBottomCurrent, sideTopCurrent, sideBottomNext);
+            indices.push(sideTopCurrent, sideTopNext, sideBottomNext);
+        }
+
+        // Create indices for bottom cap
+        for (let i = 0; i < radialSegments; i++) {
+            const current = i * 4; // Bottom vertex
+            const next = ((i + 1) % radialSegments) * 4;
+            indices.push(centerBottomIndex, next, current);
+        }
+
+        // Create indices for top cap
+        for (let i = 0; i < radialSegments; i++) {
+            const current = i * 4 + 1; // Top vertex
+            const next = ((i + 1) % radialSegments) * 4 + 1;
+            indices.push(centerTopIndex, current, next);
+        }
+
+        return { vertices, indices };
+    }
+
+    static createPyramid(size = 1) {
+        const vertices = [
+            // Base vertices (square)
+            -size, -size, -size,   0, -1,  0, // Bottom-left
+             size, -size, -size,   0, -1,  0, // Bottom-right
+             size, -size,  size,   0, -1,  0, // Top-right
+            -size, -size,  size,   0, -1,  0, // Top-left
+
+            // Apex vertex (duplicated with different normals for each face)
+            // Front face normal
+             0,  size,  0,   0,  0.7071,  0.7071,
+            // Right face normal  
+             0,  size,  0,   0.7071,  0.7071,  0,
+            // Back face normal
+             0,  size,  0,   0, 0.7071, -0.7071,
+            // Left face normal
+             0,  size,  0,  -0.7071,  0.7071,  0,
+
+            // Base vertices duplicated for proper face normals
+            // Front face vertices
+            -size, -size,  size,   0,  0.7071,  0.7071,
+             size, -size,  size,   0,  0.7071,  0.7071,
+
+            // Right face vertices  
+             size, -size,  size,   0.7071,  0.7071,  0,
+             size, -size, -size,   0.7071,  0.7071,  0,
+
+            // Back face vertices
+             size, -size, -size,   0,  0.7071, -0.7071,
+            -size, -size, -size,   0,  0.7071, -0.7071,
+
+            // Left face vertices
+            -size, -size, -size,  -0.7071,  0.7071,  0,
+            -size, -size,  size,  -0.7071,  0.7071,  0
+        ];
+
+        const indices = [
+            // Base (bottom face)
+            0, 1, 2,  0, 2, 3,
+
+            // Front face  
+            4, 8, 9,
+
+            // Right face
+            5, 10, 11,
+
+            // Back face
+            6, 12, 13,
+
+            // Left face  
+            7, 14, 15
+        ];
+
+        return { vertices, indices };
+    }
 }

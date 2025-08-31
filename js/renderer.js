@@ -97,7 +97,9 @@ class NeonRenderer {
     setupBuffers() {
         this.geometries = {
             cube: this.createGeometry(Geometry.createCube()),
-            sphere: this.createGeometry(Geometry.createSphere())
+            sphere: this.createGeometry(Geometry.createSphere()),
+            cylinder: this.createGeometry(Geometry.createCylinder()),
+            pyramid: this.createGeometry(Geometry.createPyramid())
         };
 
         // Create quad for post-processing
