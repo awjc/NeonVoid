@@ -49,7 +49,63 @@ class NeonVoidApp {
             this.handleResize();
         });
 
+        // Add zoom controls
+        this.setupZoomControls();
+
         this.handleResize();
+    }
+
+    setupZoomControls() {
+        // Desktop: Mouse wheel zoom
+        this.canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            if (this.renderer) {
+                const zoomSpeed = 0.1;
+                const zoomDelta = e.deltaY > 0 ? zoomSpeed : -zoomSpeed;
+                this.renderer.adjustZoom(zoomDelta);
+            }
+        }, { passive: false });
+
+        // Mobile: Touch events for pinch zoom
+        let touches = [];
+        let lastDistance = 0;
+
+        this.canvas.addEventListener('touchstart', (e) => {
+            touches = Array.from(e.touches);
+            if (touches.length === 2) {
+                lastDistance = this.getTouchDistance(touches[0], touches[1]);
+            }
+        });
+
+        this.canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            touches = Array.from(e.touches);
+            
+            if (touches.length === 2 && this.renderer) {
+                const currentDistance = this.getTouchDistance(touches[0], touches[1]);
+                const deltaDistance = currentDistance - lastDistance;
+                
+                const zoomSpeed = 0.01;
+                const zoomDelta = -deltaDistance * zoomSpeed; // Invert for natural feel
+                this.renderer.adjustZoom(zoomDelta);
+                
+                lastDistance = currentDistance;
+            }
+        }, { passive: false });
+
+        this.canvas.addEventListener('touchend', (e) => {
+            touches = Array.from(e.touches);
+            if (touches.length < 2) {
+                lastDistance = 0;
+            }
+        });
+    }
+
+    getTouchDistance(touch1, touch2) {
+        const dx = touch1.clientX - touch2.clientX;
+        const dy = touch1.clientY - touch2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     handleResize() {

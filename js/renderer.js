@@ -21,7 +21,10 @@ class NeonRenderer {
 
         this.camera = {
             position: [0, 0, 5],
-            rotation: [0, 0, 0]
+            rotation: [0, 0, 0],
+            baseDistance: 5,
+            minDistance: 1.5,
+            maxDistance: 15
         };
     }
 
@@ -515,5 +518,19 @@ class NeonRenderer {
             yellow: [1, 1, 0.1]
         };
         this.currentColor = colors[color] || colors.red;
+    }
+
+    adjustZoom(delta) {
+        // Adjust camera distance based on zoom delta
+        this.camera.baseDistance += delta;
+        
+        // Clamp to min/max distances
+        this.camera.baseDistance = Math.max(
+            this.camera.minDistance, 
+            Math.min(this.camera.maxDistance, this.camera.baseDistance)
+        );
+        
+        // Update camera position
+        this.camera.position[2] = this.camera.baseDistance;
     }
 }
