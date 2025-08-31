@@ -36,27 +36,21 @@ const Shaders = {
             vec3 lightDir = normalize(u_lightPosition - v_position);
             vec3 viewDir = normalize(u_cameraPosition - v_position);
             
-            // Basic lighting calculations
+            // Basic lighting
             float NdotL = max(dot(normal, lightDir), 0.0);
             float NdotV = max(dot(normal, viewDir), 0.0);
             
-            // Smooth fresnel for glass-like rim lighting
-            float fresnel = pow(1.0 - NdotV, 3.0);
+            // Enhanced fresnel effect for stronger glow
+            float fresnel = pow(1.0 - NdotV, 2.0);
             
-            // Glass-like material properties
-            vec3 glassBase = u_color * 0.15; // Subtle base color
-            vec3 diffuse = u_color * NdotL * 0.3; // Soft lighting
+            // Base material color (not too bright)
+            vec3 baseColor = u_color * (NdotL * 0.4 + 0.3);
             
-            // Clean rim highlight for glass effect
-            float rimIntensity = smoothstep(0.0, 1.0, fresnel);
-            vec3 rimLight = u_color * rimIntensity * u_glowIntensity;
+            // Strong rim glow for bloom extraction
+            vec3 rimGlow = u_color * fresnel * u_glowIntensity;
             
-            // Subtle internal glow for neon effect
-            float centerGlow = (1.0 - rimIntensity) * 0.4;
-            vec3 innerGlow = u_color * centerGlow;
-            
-            // Combine for clean glassy neon look
-            vec3 finalColor = glassBase + diffuse + rimLight + innerGlow;
+            // Combine effects
+            vec3 finalColor = baseColor + rimGlow;
             
             gl_FragColor = vec4(finalColor, 1.0);
         }
@@ -111,19 +105,25 @@ const Shaders = {
             vec4 color = vec4(0.0);
             vec2 texelSize = 1.0 / u_resolution;
             
-            // Clean gaussian blur for smooth glow
-            vec2 off1 = vec2(1.3846153846) * u_direction * texelSize * 3.0;
-            vec2 off2 = vec2(3.2307692308) * u_direction * texelSize * 3.0;
-            vec2 off3 = vec2(5.1769230769) * u_direction * texelSize * 3.0;
+            // Extra wide blur for expansive atmospheric glow
+            vec2 off1 = vec2(1.4) * u_direction * texelSize * 6.0;
+            vec2 off2 = vec2(3.3) * u_direction * texelSize * 6.0;
+            vec2 off3 = vec2(5.2) * u_direction * texelSize * 6.0;
+            vec2 off4 = vec2(7.1) * u_direction * texelSize * 6.0;
+            vec2 off5 = vec2(9.0) * u_direction * texelSize * 6.0;
             
-            // Gaussian weights for smoother falloff
-            color += texture2D(u_texture, v_texCoord) * 0.2270270270;
-            color += texture2D(u_texture, v_texCoord + off1) * 0.3162162162;
-            color += texture2D(u_texture, v_texCoord - off1) * 0.3162162162;
-            color += texture2D(u_texture, v_texCoord + off2) * 0.0702702703;
-            color += texture2D(u_texture, v_texCoord - off2) * 0.0702702703;
-            color += texture2D(u_texture, v_texCoord + off3) * 0.0100000000;
-            color += texture2D(u_texture, v_texCoord - off3) * 0.0100000000;
+            // Extended sampling for wide atmospheric effect
+            color += texture2D(u_texture, v_texCoord) * 0.18;
+            color += texture2D(u_texture, v_texCoord + off1) * 0.22;
+            color += texture2D(u_texture, v_texCoord - off1) * 0.22;
+            color += texture2D(u_texture, v_texCoord + off2) * 0.12;
+            color += texture2D(u_texture, v_texCoord - off2) * 0.12;
+            color += texture2D(u_texture, v_texCoord + off3) * 0.06;
+            color += texture2D(u_texture, v_texCoord - off3) * 0.06;
+            color += texture2D(u_texture, v_texCoord + off4) * 0.02;
+            color += texture2D(u_texture, v_texCoord - off4) * 0.02;
+            color += texture2D(u_texture, v_texCoord + off5) * 0.01;
+            color += texture2D(u_texture, v_texCoord - off5) * 0.01;
             
             gl_FragColor = color;
         }

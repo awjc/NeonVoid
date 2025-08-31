@@ -15,9 +15,9 @@ class NeonRenderer {
         this.currentShape = 'cube';
         this.currentColor = [1, 0, 0]; // Red
         this.rotation = { x: 0, y: 0, z: 0 };
-        this.glowIntensity = 1.2;
-        this.bloomThreshold = 0.5;
-        this.bloomStrength = 2.2;
+        this.glowIntensity = 1.8;
+        this.bloomThreshold = 0.25;
+        this.bloomStrength = 3.5;
 
         this.camera = {
             position: [0, 0, 5],
