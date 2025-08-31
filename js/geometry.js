@@ -1,4 +1,4 @@
-class Geometry {
+export class Geometry {
     static createCube() {
         const vertices = [
             // Front face
@@ -115,7 +115,7 @@ class Geometry {
             vertices.push(x, -height / 2, z);
             vertices.push(0, -1, 0); // Normal pointing down
 
-            // Top circle  
+            // Top circle
             vertices.push(x, height / 2, z);
             vertices.push(0, 1, 0); // Normal pointing up
 
@@ -130,7 +130,7 @@ class Geometry {
         // Center vertices for top and bottom caps
         const centerBottomIndex = vertices.length / 6;
         vertices.push(0, -height / 2, 0, 0, -1, 0); // Bottom center
-        
+
         const centerTopIndex = vertices.length / 6;
         vertices.push(0, height / 2, 0, 0, 1, 0); // Top center
 
@@ -174,7 +174,7 @@ class Geometry {
             // Apex vertex (duplicated with different normals for each face)
             // Front face normal
              0,  size,  0,   0,  0.7071,  0.7071,
-            // Right face normal  
+            // Right face normal
              0,  size,  0,   0.7071,  0.7071,  0,
             // Back face normal
              0,  size,  0,   0, 0.7071, -0.7071,
@@ -186,7 +186,7 @@ class Geometry {
             -size, -size,  size,   0,  0.7071,  0.7071,
              size, -size,  size,   0,  0.7071,  0.7071,
 
-            // Right face vertices  
+            // Right face vertices
              size, -size,  size,   0.7071,  0.7071,  0,
              size, -size, -size,   0.7071,  0.7071,  0,
 
@@ -203,7 +203,7 @@ class Geometry {
             // Base (bottom face)
             0, 1, 2,  0, 2, 3,
 
-            // Front face  
+            // Front face
             4, 8, 9,
 
             // Right face
@@ -212,7 +212,7 @@ class Geometry {
             // Back face
             6, 12, 13,
 
-            // Left face  
+            // Left face
             7, 14, 15
         ];
 

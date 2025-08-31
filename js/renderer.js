@@ -1,8 +1,12 @@
-class NeonRenderer {
+import { Shaders } from './shaders.js';
+import { Geometry } from './geometry.js';
+import { WebGLUtils } from './webgl-utils.js';
+
+export class NeonRenderer {
     constructor(canvas) {
         this.canvas = canvas;
         this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        
+
         if (!this.gl) {
             throw new Error('WebGL not supported');
         }
@@ -155,12 +159,12 @@ class NeonRenderer {
 
     cleanupFramebuffers() {
         const gl = this.gl;
-        
+
         if (this.sceneFramebuffer) gl.deleteFramebuffer(this.sceneFramebuffer);
         if (this.bloomFramebuffer) gl.deleteFramebuffer(this.bloomFramebuffer);
         if (this.blurFramebuffer1) gl.deleteFramebuffer(this.blurFramebuffer1);
         if (this.blurFramebuffer2) gl.deleteFramebuffer(this.blurFramebuffer2);
-        
+
         if (this.sceneTexture) gl.deleteTexture(this.sceneTexture);
         if (this.bloomTexture) gl.deleteTexture(this.bloomTexture);
         if (this.blurTexture1) gl.deleteTexture(this.blurTexture1);
@@ -259,7 +263,7 @@ class NeonRenderer {
 
     render() {
         const gl = this.gl;
-        
+
         if (WebGLUtils.resizeCanvas(this.canvas)) {
             this.setupFramebuffers();
         }
@@ -292,9 +296,9 @@ class NeonRenderer {
 
     renderSceneDirect() {
         const gl = this.gl;
-        
+
         console.log('Direct render - current shape:', this.currentShape, 'color:', this.currentColor);
-        
+
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -312,17 +316,17 @@ class NeonRenderer {
         const normalMatrix = this.createMatrix4();
 
         this.identity(modelMatrix);
-        
+
         // Apply combined rotations for better 3D visibility
         const rotX = this.createMatrix4();
         const rotY = this.createMatrix4();
         const rotZ = this.createMatrix4();
         const tempMatrix = this.createMatrix4();
-        
+
         this.rotateX(rotX, this.rotation.x);
         this.rotateY(rotY, this.rotation.y);
         this.rotateZ(rotZ, this.rotation.z);
-        
+
         // Combine rotations: modelMatrix = rotZ * rotY * rotX
         this.multiply(tempMatrix, rotY, rotX);
         this.multiply(modelMatrix, rotZ, tempMatrix);
@@ -344,7 +348,7 @@ class NeonRenderer {
 
         // Render geometry
         const geometry = this.geometries[this.currentShape];
-        
+
         if (!geometry) {
             console.error('Geometry not found for shape:', this.currentShape);
             console.log('Available geometries:', Object.keys(this.geometries));
@@ -361,7 +365,7 @@ class NeonRenderer {
 
         console.log('About to draw', geometry.indexCount, 'triangles');
         gl.drawElements(gl.TRIANGLES, geometry.indexCount, gl.UNSIGNED_SHORT, 0);
-        
+
         // Check for WebGL errors
         const error = gl.getError();
         if (error !== gl.NO_ERROR) {
@@ -371,7 +375,7 @@ class NeonRenderer {
 
     renderScene() {
         const gl = this.gl;
-        
+
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.sceneFramebuffer);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -384,17 +388,17 @@ class NeonRenderer {
         const normalMatrix = this.createMatrix4();
 
         this.identity(modelMatrix);
-        
+
         // Apply combined rotations for better 3D visibility
         const rotX = this.createMatrix4();
         const rotY = this.createMatrix4();
         const rotZ = this.createMatrix4();
         const tempMatrix = this.createMatrix4();
-        
+
         this.rotateX(rotX, this.rotation.x);
         this.rotateY(rotY, this.rotation.y);
         this.rotateZ(rotZ, this.rotation.z);
-        
+
         // Combine rotations: modelMatrix = rotZ * rotY * rotX
         this.multiply(tempMatrix, rotY, rotX);
         this.multiply(modelMatrix, rotZ, tempMatrix);
@@ -495,7 +499,7 @@ class NeonRenderer {
             gl.enableVertexAttribArray(attribs.position);
             gl.vertexAttribPointer(attribs.position, 2, gl.FLOAT, false, 16, 0);
         }
-        
+
         if (attribs.texCoord >= 0) {
             gl.enableVertexAttribArray(attribs.texCoord);
             gl.vertexAttribPointer(attribs.texCoord, 2, gl.FLOAT, false, 16, 8);
@@ -523,13 +527,13 @@ class NeonRenderer {
     adjustZoom(delta) {
         // Adjust camera distance based on zoom delta
         this.camera.baseDistance += delta;
-        
+
         // Clamp to min/max distances
         this.camera.baseDistance = Math.max(
-            this.camera.minDistance, 
+            this.camera.minDistance,
             Math.min(this.camera.maxDistance, this.camera.baseDistance)
         );
-        
+
         // Update camera position
         this.camera.position[2] = this.camera.baseDistance;
     }

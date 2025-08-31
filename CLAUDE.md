@@ -69,3 +69,4 @@ The included `server.py` will automatically open your browser to the application
 - Framebuffer objects for post-processing
 - Multiple render targets for bloom pipeline
 - Matrix transformations for 3D positioning
+- "remember to update the version string in index.html after each batch of actions. v1234 should be incremented and replaced with v1235, for example"

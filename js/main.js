@@ -5,16 +5,22 @@ class NeonVoidApp {
         this.animationId = null;
 
         this.init();
-        this.setupControls();
-        this.start();
     }
 
-    init() {
+    async init() {
         try {
+            // Load shaders first
+            await shaderManager.loadAll();
+
+            // Now initialize the renderer
             this.renderer = new NeonRenderer(this.canvas);
             console.log('NeonVoid initialized successfully');
             console.log('Canvas size:', this.canvas.width, 'x', this.canvas.height);
             console.log('WebGL context:', this.renderer.gl.getParameter(this.renderer.gl.VERSION));
+
+            // Setup controls and start after renderer is ready
+            this.setupControls();
+            this.start();
         } catch (error) {
             console.error('Failed to initialize NeonVoid:', error);
             console.error('Error stack:', error.stack);
@@ -59,7 +65,7 @@ class NeonVoidApp {
         // Desktop: Mouse wheel zoom
         this.canvas.addEventListener('wheel', (e) => {
             e.preventDefault();
-            
+
             if (this.renderer) {
                 const zoomSpeed = 0.1;
                 const zoomDelta = e.deltaY > 0 ? zoomSpeed : -zoomSpeed;
@@ -83,15 +89,15 @@ class NeonVoidApp {
             e.preventDefault();
             e.stopPropagation();
             touches = Array.from(e.touches);
-            
+
             if (touches.length === 2 && this.renderer) {
                 const currentDistance = this.getTouchDistance(touches[0], touches[1]);
                 const deltaDistance = currentDistance - lastDistance;
-                
+
                 const zoomSpeed = 0.01;
                 const zoomDelta = -deltaDistance * zoomSpeed; // Invert for natural feel
                 this.renderer.adjustZoom(zoomDelta);
-                
+
                 lastDistance = currentDistance;
             }
         }, { passive: false });
@@ -137,7 +143,7 @@ class NeonVoidApp {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
-        
+
         // Force framebuffer recreation if renderer exists
         if (this.renderer) {
             this.renderer.setupFramebuffers();
@@ -165,7 +171,7 @@ class NeonVoidApp {
     showError(message) {
         const canvas = this.canvas;
         canvas.style.display = 'none';
-        
+
         const errorDiv = document.createElement('div');
         errorDiv.style.cssText = `
             position: fixed;
@@ -185,6 +191,9 @@ class NeonVoidApp {
         document.body.appendChild(errorDiv);
     }
 }
+
+import { shaderManager } from './shaders.js';
+import { NeonRenderer } from './renderer.js';
 
 // Start the application when the page loads
 window.addEventListener('DOMContentLoaded', () => {
