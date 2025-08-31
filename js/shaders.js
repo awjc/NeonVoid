@@ -40,12 +40,20 @@ const Shaders = {
             float NdotL = max(dot(normal, lightDir), 0.0);
             float NdotV = max(dot(normal, viewDir), 0.0);
             
-            // Fresnel effect for glow
-            float fresnel = pow(1.0 - NdotV, 2.0);
+            // Enhanced fresnel effect for stronger glow
+            float fresnel = pow(1.0 - NdotV, 1.5);
             
-            // Combine lighting and glow
-            vec3 finalColor = u_color * (NdotL * 0.5 + 0.3);
-            finalColor += u_color * fresnel * u_glowIntensity;
+            // Base emissive color (makes shapes glow inherently)
+            vec3 emissive = u_color * 0.8;
+            
+            // Lighting contribution
+            vec3 lighting = u_color * (NdotL * 0.4 + 0.2);
+            
+            // Strong rim lighting effect
+            vec3 rimGlow = u_color * fresnel * u_glowIntensity;
+            
+            // Combine all effects with higher intensity
+            vec3 finalColor = emissive + lighting + rimGlow;
             
             gl_FragColor = vec4(finalColor, 1.0);
         }
@@ -98,14 +106,20 @@ const Shaders = {
         
         void main() {
             vec4 color = vec4(0.0);
-            vec2 off1 = vec2(1.3846153846) * u_direction;
-            vec2 off2 = vec2(3.2307692308) * u_direction;
+            vec2 texelSize = 1.0 / u_resolution;
             
-            color += texture2D(u_texture, v_texCoord) * 0.2270270270;
-            color += texture2D(u_texture, v_texCoord + (off1 / u_resolution)) * 0.3162162162;
-            color += texture2D(u_texture, v_texCoord - (off1 / u_resolution)) * 0.3162162162;
-            color += texture2D(u_texture, v_texCoord + (off2 / u_resolution)) * 0.0702702703;
-            color += texture2D(u_texture, v_texCoord - (off2 / u_resolution)) * 0.0702702703;
+            // Wider blur for better glow halo effect
+            vec2 off1 = vec2(1.411764706) * u_direction * texelSize * 2.0;
+            vec2 off2 = vec2(3.294117647) * u_direction * texelSize * 2.0;
+            vec2 off3 = vec2(5.176470588) * u_direction * texelSize * 2.0;
+            
+            color += texture2D(u_texture, v_texCoord) * 0.1964825501;
+            color += texture2D(u_texture, v_texCoord + off1) * 0.2969069646;
+            color += texture2D(u_texture, v_texCoord - off1) * 0.2969069646;
+            color += texture2D(u_texture, v_texCoord + off2) * 0.0920245398;
+            color += texture2D(u_texture, v_texCoord - off2) * 0.0920245398;
+            color += texture2D(u_texture, v_texCoord + off3) * 0.0078431373;
+            color += texture2D(u_texture, v_texCoord - off3) * 0.0078431373;
             
             gl_FragColor = color;
         }

@@ -14,10 +14,10 @@ class NeonRenderer {
 
         this.currentShape = 'cube';
         this.currentColor = [1, 0, 0]; // Red
-        this.rotation = 0;
-        this.glowIntensity = 1.5;
-        this.bloomThreshold = 0.5;
-        this.bloomStrength = 1.0;
+        this.rotation = { x: 0, y: 0, z: 0 };
+        this.glowIntensity = 2.5;
+        this.bloomThreshold = 0.2;
+        this.bloomStrength = 2.0;
 
         this.camera = {
             position: [0, 0, 5],
@@ -121,8 +121,13 @@ class NeonRenderer {
 
     setupFramebuffers() {
         const gl = this.gl;
-        const width = this.canvas.width;
-        const height = this.canvas.height;
+        const width = this.canvas.width || 800;
+        const height = this.canvas.height || 600;
+
+        console.log('Setting up framebuffers with size:', width, 'x', height);
+
+        // Clean up existing framebuffers and textures
+        this.cleanupFramebuffers();
 
         // Scene framebuffer
         this.sceneTexture = WebGLUtils.createTexture(gl, width, height);
@@ -137,6 +142,26 @@ class NeonRenderer {
 
         this.blurTexture2 = WebGLUtils.createTexture(gl, width, height);
         this.blurFramebuffer2 = WebGLUtils.createFramebuffer(gl, this.blurTexture2);
+
+        // Check framebuffer completeness
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.sceneFramebuffer);
+        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+            console.error('Scene framebuffer not complete');
+        }
+    }
+
+    cleanupFramebuffers() {
+        const gl = this.gl;
+        
+        if (this.sceneFramebuffer) gl.deleteFramebuffer(this.sceneFramebuffer);
+        if (this.bloomFramebuffer) gl.deleteFramebuffer(this.bloomFramebuffer);
+        if (this.blurFramebuffer1) gl.deleteFramebuffer(this.blurFramebuffer1);
+        if (this.blurFramebuffer2) gl.deleteFramebuffer(this.blurFramebuffer2);
+        
+        if (this.sceneTexture) gl.deleteTexture(this.sceneTexture);
+        if (this.bloomTexture) gl.deleteTexture(this.bloomTexture);
+        if (this.blurTexture1) gl.deleteTexture(this.blurTexture1);
+        if (this.blurTexture2) gl.deleteTexture(this.blurTexture2);
     }
 
     createMatrix4() {
@@ -160,6 +185,16 @@ class NeonRenderer {
         return out;
     }
 
+    rotateX(out, rad) {
+        const s = Math.sin(rad);
+        const c = Math.cos(rad);
+        out[0] = 1; out[1] = 0; out[2] = 0; out[3] = 0;
+        out[4] = 0; out[5] = c; out[6] = -s; out[7] = 0;
+        out[8] = 0; out[9] = s; out[10] = c; out[11] = 0;
+        out[12] = 0; out[13] = 0; out[14] = 0; out[15] = 1;
+        return out;
+    }
+
     rotateY(out, rad) {
         const s = Math.sin(rad);
         const c = Math.cos(rad);
@@ -167,6 +202,50 @@ class NeonRenderer {
         out[4] = 0; out[5] = 1; out[6] = 0; out[7] = 0;
         out[8] = -s; out[9] = 0; out[10] = c; out[11] = 0;
         out[12] = 0; out[13] = 0; out[14] = 0; out[15] = 1;
+        return out;
+    }
+
+    rotateZ(out, rad) {
+        const s = Math.sin(rad);
+        const c = Math.cos(rad);
+        out[0] = c; out[1] = -s; out[2] = 0; out[3] = 0;
+        out[4] = s; out[5] = c; out[6] = 0; out[7] = 0;
+        out[8] = 0; out[9] = 0; out[10] = 1; out[11] = 0;
+        out[12] = 0; out[13] = 0; out[14] = 0; out[15] = 1;
+        return out;
+    }
+
+    multiply(out, a, b) {
+        const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
+        const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
+        const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
+        const a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+
+        const b00 = b[0], b01 = b[1], b02 = b[2], b03 = b[3];
+        const b10 = b[4], b11 = b[5], b12 = b[6], b13 = b[7];
+        const b20 = b[8], b21 = b[9], b22 = b[10], b23 = b[11];
+        const b30 = b[12], b31 = b[13], b32 = b[14], b33 = b[15];
+
+        out[0] = a00 * b00 + a01 * b10 + a02 * b20 + a03 * b30;
+        out[1] = a00 * b01 + a01 * b11 + a02 * b21 + a03 * b31;
+        out[2] = a00 * b02 + a01 * b12 + a02 * b22 + a03 * b32;
+        out[3] = a00 * b03 + a01 * b13 + a02 * b23 + a03 * b33;
+
+        out[4] = a10 * b00 + a11 * b10 + a12 * b20 + a13 * b30;
+        out[5] = a10 * b01 + a11 * b11 + a12 * b21 + a13 * b31;
+        out[6] = a10 * b02 + a11 * b12 + a12 * b22 + a13 * b32;
+        out[7] = a10 * b03 + a11 * b13 + a12 * b23 + a13 * b33;
+
+        out[8] = a20 * b00 + a21 * b10 + a22 * b20 + a23 * b30;
+        out[9] = a20 * b01 + a21 * b11 + a22 * b21 + a23 * b31;
+        out[10] = a20 * b02 + a21 * b12 + a22 * b22 + a23 * b32;
+        out[11] = a20 * b03 + a21 * b13 + a22 * b23 + a23 * b33;
+
+        out[12] = a30 * b00 + a31 * b10 + a32 * b20 + a33 * b30;
+        out[13] = a30 * b01 + a31 * b11 + a32 * b21 + a33 * b31;
+        out[14] = a30 * b02 + a31 * b12 + a32 * b22 + a33 * b32;
+        out[15] = a30 * b03 + a31 * b13 + a32 * b23 + a33 * b33;
+
         return out;
     }
 
@@ -184,17 +263,28 @@ class NeonRenderer {
 
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
-        // For debugging, render directly to canvas first
+        // Temporarily disable bloom for debugging
+        console.log('Rendering frame - canvas size:', this.canvas.width, 'x', this.canvas.height);
         this.renderSceneDirect();
 
-        this.rotation += 0.01;
+        // Update rotations with different speeds for interesting motion
+        this.rotation.x += 0.007; // Slightly slower X rotation
+        this.rotation.y += 0.01;  // Standard Y rotation
+        this.rotation.z += 0.004; // Slower Z rotation
     }
 
     renderSceneDirect() {
         const gl = this.gl;
         
+        console.log('Direct render - current shape:', this.currentShape, 'color:', this.currentColor);
+        
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        if (!this.program) {
+            console.error('Shader program is null!');
+            return;
+        }
 
         gl.useProgram(this.program);
 
@@ -205,7 +295,20 @@ class NeonRenderer {
         const normalMatrix = this.createMatrix4();
 
         this.identity(modelMatrix);
-        this.rotateY(modelMatrix, this.rotation);
+        
+        // Apply combined rotations for better 3D visibility
+        const rotX = this.createMatrix4();
+        const rotY = this.createMatrix4();
+        const rotZ = this.createMatrix4();
+        const tempMatrix = this.createMatrix4();
+        
+        this.rotateX(rotX, this.rotation.x);
+        this.rotateY(rotY, this.rotation.y);
+        this.rotateZ(rotZ, this.rotation.z);
+        
+        // Combine rotations: modelMatrix = rotZ * rotY * rotX
+        this.multiply(tempMatrix, rotY, rotX);
+        this.multiply(modelMatrix, rotZ, tempMatrix);
 
         this.identity(viewMatrix);
         this.translate(viewMatrix, -this.camera.position[0], -this.camera.position[1], -this.camera.position[2]);
@@ -224,6 +327,12 @@ class NeonRenderer {
 
         // Render geometry
         const geometry = this.geometries[this.currentShape];
+        
+        if (!geometry) {
+            console.error('Geometry not found for shape:', this.currentShape);
+            console.log('Available geometries:', Object.keys(this.geometries));
+            return;
+        }
         gl.bindBuffer(gl.ARRAY_BUFFER, geometry.vertexBuffer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indexBuffer);
 
@@ -233,7 +342,14 @@ class NeonRenderer {
         gl.vertexAttribPointer(this.attribs.position, 3, gl.FLOAT, false, 24, 0);
         gl.vertexAttribPointer(this.attribs.normal, 3, gl.FLOAT, false, 24, 12);
 
+        console.log('About to draw', geometry.indexCount, 'triangles');
         gl.drawElements(gl.TRIANGLES, geometry.indexCount, gl.UNSIGNED_SHORT, 0);
+        
+        // Check for WebGL errors
+        const error = gl.getError();
+        if (error !== gl.NO_ERROR) {
+            console.error('WebGL error during draw:', error);
+        }
     }
 
     renderScene() {
@@ -251,7 +367,20 @@ class NeonRenderer {
         const normalMatrix = this.createMatrix4();
 
         this.identity(modelMatrix);
-        this.rotateY(modelMatrix, this.rotation);
+        
+        // Apply combined rotations for better 3D visibility
+        const rotX = this.createMatrix4();
+        const rotY = this.createMatrix4();
+        const rotZ = this.createMatrix4();
+        const tempMatrix = this.createMatrix4();
+        
+        this.rotateX(rotX, this.rotation.x);
+        this.rotateY(rotY, this.rotation.y);
+        this.rotateZ(rotZ, this.rotation.z);
+        
+        // Combine rotations: modelMatrix = rotZ * rotY * rotX
+        this.multiply(tempMatrix, rotY, rotX);
+        this.multiply(modelMatrix, rotZ, tempMatrix);
 
         this.identity(viewMatrix);
         this.translate(viewMatrix, -this.camera.position[0], -this.camera.position[1], -this.camera.position[2]);
@@ -286,6 +415,7 @@ class NeonRenderer {
         const gl = this.gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.bloomFramebuffer);
         gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
         gl.useProgram(this.bloomProgram);
         gl.uniform1i(gl.getUniformLocation(this.bloomProgram, 'u_texture'), 0);
@@ -306,6 +436,7 @@ class NeonRenderer {
 
         // Horizontal blur
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.blurFramebuffer1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
         gl.uniform2f(gl.getUniformLocation(this.blurProgram, 'u_direction'), 1, 0);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.bloomTexture);
@@ -313,6 +444,7 @@ class NeonRenderer {
 
         // Vertical blur
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.blurFramebuffer2);
+        gl.clear(gl.COLOR_BUFFER_BIT);
         gl.uniform2f(gl.getUniformLocation(this.blurProgram, 'u_direction'), 0, 1);
         gl.bindTexture(gl.TEXTURE_2D, this.blurTexture1);
         this.renderQuad(this.quadAttribs.blur);
@@ -322,6 +454,7 @@ class NeonRenderer {
         const gl = this.gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
         gl.useProgram(this.compositeProgram);
         gl.uniform1i(gl.getUniformLocation(this.compositeProgram, 'u_scene'), 0);

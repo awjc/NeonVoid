@@ -56,6 +56,12 @@ class NeonVoidApp {
         const canvas = this.canvas;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
+        
+        // Force framebuffer recreation if renderer exists
+        if (this.renderer) {
+            this.renderer.setupFramebuffers();
+        }
     }
 
     start() {
