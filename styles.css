@@ -1,0 +1,62 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+    color: #fff;
+}
+
+#glCanvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, #111 0%, #000 100%);
+}
+
+.controls {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    backdrop-filter: blur(10px);
+}
+
+.controls h1 {
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.control-group {
+    margin-bottom: 10px;
+}
+
+.control-group label {
+    display: inline-block;
+    width: 60px;
+    color: #ccc;
+}
+
+.control-group select {
+    background: #222;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 5px;
+    border-radius: 5px;
+    outline: none;
+}
+
+.control-group select:focus {
+    border-color: #00ffff;
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+}

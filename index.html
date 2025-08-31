@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeonVoid - WebGL Neon Shapes</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="glCanvas"></canvas>
+    <div class="controls">
+        <h1>NeonVoid</h1>
+        <div class="control-group">
+            <label>Shape:</label>
+            <select id="shapeSelect">
+                <option value="cube">Cube</option>
+                <option value="sphere">Sphere</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Color:</label>
+            <select id="colorSelect">
+                <option value="red">Red</option>
+                <option value="green">Green</option>
+                <option value="blue">Blue</option>
+                <option value="cyan">Cyan</option>
+                <option value="magenta">Magenta</option>
+                <option value="yellow">Yellow</option>
+            </select>
+        </div>
+    </div>
+    <script src="js/webgl-utils.js"></script>
+    <script src="js/geometry.js"></script>
+    <script src="js/shaders.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
