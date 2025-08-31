@@ -15,9 +15,9 @@ class NeonRenderer {
         this.currentShape = 'cube';
         this.currentColor = [1, 0, 0]; // Red
         this.rotation = { x: 0, y: 0, z: 0 };
-        this.glowIntensity = 2.5;
-        this.bloomThreshold = 0.2;
-        this.bloomStrength = 2.0;
+        this.glowIntensity = 1.2;
+        this.bloomThreshold = 0.5;
+        this.bloomStrength = 2.2;
 
         this.camera = {
             position: [0, 0, 5],
@@ -263,9 +263,23 @@ class NeonRenderer {
 
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
-        // Temporarily disable bloom for debugging
-        console.log('Rendering frame - canvas size:', this.canvas.width, 'x', this.canvas.height);
-        this.renderSceneDirect();
+        // Re-enable bloom pipeline for glow effect
+        try {
+            // 1. Render scene to framebuffer
+            this.renderScene();
+
+            // 2. Extract bloom
+            this.extractBloom();
+
+            // 3. Blur bloom
+            this.blurBloom();
+
+            // 4. Composite final image
+            this.composite();
+        } catch (error) {
+            console.warn('Bloom pipeline failed, falling back to direct rendering:', error);
+            this.renderSceneDirect();
+        }
 
         // Update rotations with different speeds for interesting motion
         this.rotation.x += 0.007; // Slightly slower X rotation
